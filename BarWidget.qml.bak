@@ -1,0 +1,48 @@
+import QtQuick
+import Quickshell.Io
+import qs.Ui
+
+BarWidget {
+    id: root
+    moduleName: "nkarl.en-vi-indicator"
+
+    property string inputMethod: ""
+
+    readonly property string language: {
+        switch (inputMethod) {
+        case "keyboard-us":
+            return "EN"
+        case "lotus":
+            return "VI"
+        default:
+            return "??"
+        }
+    }
+
+    implicitWidth: button.implicitWidth
+    implicitHeight: button.implicitHeight
+
+    Process {
+        id: query
+        stdout: StdioCollector {
+            onStreamFinished: {
+                root.inputMethod = text.trim()
+            }
+        }
+    }
+
+    Timer {
+        interval: 250
+        repeat: true
+        running: true
+        triggeredOnStart: true
+        onTriggered: query.exec(["fcitx5-remote", "-n"])
+    }
+
+    WidgetButton {
+        id: button
+        anchors.fill: parent
+        bar: root.bar
+        text: root.language
+    }
+}

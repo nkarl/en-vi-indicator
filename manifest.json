@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "nkarl.en-vi-indicator",
+  "name": "English-Vietnamese Input Indicator",
+  "version": "0.5.0",
+  "author": "Kyle",
+  "license": "MIT",
+  "description": "Displays the active Fcitx5 Lotus input language (English / Vietnamese).",
+  "kinds": ["bar-widget", "service"],
+  "entryPoints": {
+    "barWidget": "BarWidget.qml",
+    "service": "Service.qml"
+  },
+  "barWidget": {
+    "displayName": "Input Language",
+    "category": "System",
+    "allowMultiple": false,
+    "defaultSection": "right"
+  }
+}
