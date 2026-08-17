@@ -139,6 +139,7 @@ Panel {
                                 id: queueRow
                                 required property var modelData
                                 required property int index
+                                readonly property var panelOwner: root
                                 width: parent.width
                                 implicitHeight: Style.space(56)
                                 radius: Style.cornerRadius
@@ -197,7 +198,7 @@ Panel {
                                                         }
                                                         onClicked: function(mouse) {
                                                             mouse.accepted = true
-                                                            root.editingIndex = queueRow.index
+                                                            queueRow.panelOwner.editingIndex = queueRow.index
                                                             Qt.callLater(function() {
                                                                 labelEditor.forceActiveFocus()
                                                                 labelEditor.selectAll()
@@ -216,9 +217,10 @@ Panel {
                                                     font.capitalization: Font.AllUppercase
 
                                                     function commit() {
-                                                        if (root.hostWidget)
-                                                            root.hostWidget.setLabel(queueRow.index, text)
-                                                        root.editingIndex = -1
+                                                        if (queueRow.panelOwner.hostWidget)
+                                                            queueRow.panelOwner.hostWidget.setLabel(
+                                                                queueRow.modelData.id, text)
+                                                        queueRow.panelOwner.editingIndex = -1
                                                     }
 
                                                     onAccepted: commit()
@@ -276,9 +278,9 @@ Panel {
                                             text: "↑"
                                             tooltipText: "Push up one rank"
                                             onClicked: {
-                                                root.editingIndex = -1
-                                                if (root.hostWidget)
-                                                    root.hostWidget.promote(queueRow.index)
+                                                queueRow.panelOwner.editingIndex = -1
+                                                if (queueRow.panelOwner.hostWidget)
+                                                    queueRow.panelOwner.hostWidget.promote(queueRow.index)
                                             }
                                         }
 
@@ -287,9 +289,9 @@ Panel {
                                             text: "−"
                                             tooltipText: "Remove from cycle"
                                             onClicked: {
-                                                root.editingIndex = -1
-                                                if (root.hostWidget)
-                                                    root.hostWidget.removeMethod(queueRow.index)
+                                                queueRow.panelOwner.editingIndex = -1
+                                                if (queueRow.panelOwner.hostWidget)
+                                                    queueRow.panelOwner.hostWidget.removeMethod(queueRow.index)
                                             }
                                         }
                                     }
@@ -335,16 +337,25 @@ Panel {
                         Repeater {
                             model: root.unselectedMethods
 
-                            delegate: Button {
+                            delegate: Item {
                                 required property var modelData
+                                readonly property var panelOwner: root
                                 width: parent.width
-                                leftAlign: true
-                                bordered: true
-                                text: "+   " + (modelData.name || root.prettyName(modelData.id))
-                                tooltipText: modelData.id
-                                onClicked: {
-                                    if (root.hostWidget) root.hostWidget.addMethod(modelData)
-                                    root.addChooserOpen = false
+                                implicitHeight: addButton.implicitHeight
+
+                                Button {
+                                    id: addButton
+                                    anchors.fill: parent
+                                    leftAlign: true
+                                    bordered: true
+                                    text: "+   " + (parent.modelData.name
+                                        || parent.panelOwner.prettyName(parent.modelData.id))
+                                    tooltipText: parent.modelData.id
+                                    onClicked: {
+                                        if (parent.panelOwner.hostWidget)
+                                            parent.panelOwner.hostWidget.addMethod(parent.modelData)
+                                        parent.panelOwner.addChooserOpen = false
+                                    }
                                 }
                             }
                         }

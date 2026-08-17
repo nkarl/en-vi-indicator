@@ -7,6 +7,7 @@ Item {
     property string inputMethod: ""
     property var availableMethods: []
     property string pendingActivation: ""
+    property string activationTarget: ""
     readonly property string monitorPath: Qt.resolvedUrl("fcitx-state-monitor").toString().replace(/^file:\/\//, "")
 
     function refreshMethods() {
@@ -17,6 +18,8 @@ Item {
     function activate(inputMethodId) {
         const id = String(inputMethodId || "")
         if (id === "") return
+        activationTarget = id
+        activationTimeout.restart()
         if (setProcess.running) {
             pendingActivation = id
             return
@@ -32,9 +35,20 @@ Item {
         stdout: SplitParser {
             onRead: function(line) {
                 const state = line.trim()
-                if (state !== "") service.inputMethod = state
+                if (state === "") return
+                service.inputMethod = state
+                if (state === service.activationTarget) {
+                    service.activationTarget = ""
+                    activationTimeout.stop()
+                }
             }
         }
+    }
+
+    Timer {
+        id: activationTimeout
+        interval: 2000
+        onTriggered: service.activationTarget = ""
     }
 
     Process {

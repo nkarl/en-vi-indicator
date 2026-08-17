@@ -21,6 +21,15 @@ BarWidget {
         return JSON.parse(JSON.stringify(source || []))
     }
 
+    function queuesEqual(left, right) {
+        if (left.length !== right.length) return false
+        for (let i = 0; i < left.length; i++) {
+            if (left[i].id !== right[i].id || left[i].label !== right[i].label)
+                return false
+        }
+        return true
+    }
+
     function methodInfo(inputMethodId) {
         const methods = inputService && inputService.availableMethods instanceof Array
             ? inputService.availableMethods : []
@@ -74,22 +83,27 @@ BarWidget {
     }
 
     function loadQueue() {
-        let next = normalizedQueue(setting("inputMethods", []))
+        const stored = normalizedQueue(setting("inputMethods", []))
+        let next = copyQueue(stored)
         if (next.length === 0) next = defaultQueue()
         if (next.length === 0) return
 
         // Fcitx is authoritative when it changes outside this widget. Restore
-        // the invariant that rank one is the active input method.
-        const currentIndex = next.findIndex(function(entry) { return entry.id === inputMethod })
-        if (currentIndex > 0) {
-            const current = next.splice(currentIndex, 1)[0]
-            next.unshift(current)
-        } else if (currentIndex < 0 && inputMethod !== "") {
-            next.unshift({ id: inputMethod, label: suggestedLabel(inputMethod) })
+        // the invariant that rank one is active, except while Fcitx is still
+        // confirming a promotion requested by this widget.
+        const target = inputService ? inputService.activationTarget : ""
+        if (target === "") {
+            const currentIndex = next.findIndex(function(entry) { return entry.id === inputMethod })
+            if (currentIndex > 0) {
+                const current = next.splice(currentIndex, 1)[0]
+                next.unshift(current)
+            } else if (currentIndex < 0 && inputMethod !== "") {
+                next.unshift({ id: inputMethod, label: suggestedLabel(inputMethod) })
+            }
         }
 
         queue = next
-        persistQueue(next)
+        if (!queuesEqual(stored, next)) persistQueue(next)
         injectPanel()
     }
 
@@ -109,8 +123,8 @@ BarWidget {
         const promoted = next[index]
         next[index] = next[index - 1]
         next[index - 1] = promoted
-        persistQueue(next)
         if (index === 1 && inputService) inputService.activate(promoted.id)
+        persistQueue(next)
     }
 
     function promoteSecond() {
@@ -132,7 +146,8 @@ BarWidget {
         persistQueue(next)
     }
 
-    function setLabel(index, value) {
+    function setLabel(inputMethodId, value) {
+        const index = queue.findIndex(function(entry) { return entry.id === inputMethodId })
         if (index < 0 || index >= queue.length) return
         const next = copyQueue(queue)
         const labelValue = String(value || "").trim().toUpperCase().substring(0, 3)
@@ -172,6 +187,7 @@ BarWidget {
     Connections {
         target: root.inputService
         function onAvailableMethodsChanged() { root.loadQueue() }
+        function onActivationTargetChanged() { root.loadQueue() }
     }
 
     Loader {
