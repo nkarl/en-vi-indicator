@@ -207,7 +207,7 @@ BarWidget {
         bar: root.bar
         text: root.label
         tooltipText: (root.inputMethod || "Unavailable")
-            + "\nLeft click: promote next · Right click: configure"
+            //+ "\nLeft click: promote next · Right click: configure"
 
         onPressed: function(buttonCode) {
             if (buttonCode === Qt.LeftButton) root.promoteSecond()

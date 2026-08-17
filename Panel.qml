@@ -106,7 +106,7 @@ Panel {
                             }
 
                             Text {
-                                text: "Push a method upward until it becomes active"
+                                //text: "Push a method upward until it becomes active"
                                 color: Util.alpha(root.contentForeground, 0.64)
                                 font.family: root.contentFontFamily
                                 font.pixelSize: Style.font.caption
