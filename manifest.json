@@ -1,18 +1,18 @@
 {
   "schemaVersion": 1,
   "id": "nkarl.en-vi-indicator",
-  "name": "English-Vietnamese Input Indicator",
-  "version": "0.5.0",
+  "name": "Fcitx Input Method Indicator",
+  "version": "0.7.0",
   "author": "Kyle",
   "license": "MIT",
-  "description": "Displays the active Fcitx5 Lotus input language (English / Vietnamese).",
+  "description": "Displays and configures a priority cycle of Fcitx 5 input methods.",
   "kinds": ["bar-widget", "service"],
   "entryPoints": {
     "barWidget": "BarWidget.qml",
     "service": "Service.qml"
   },
   "barWidget": {
-    "displayName": "Input Language",
+    "displayName": "Input Methods",
     "category": "System",
     "allowMultiple": false,
     "defaultSection": "right"
